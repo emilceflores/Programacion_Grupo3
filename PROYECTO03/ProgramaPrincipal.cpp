@@ -6,30 +6,41 @@
 
 using namespace std;
 
-int main() {
+void mostrarmenu();
+int main() 
+{
+    system("chcp 65001");
+    mostrarmenu();
 
-    int opcion;
+    return 0;
+}
+
+void mostrarmenu()
+{
+    int opcion=0 ;
 
     do {
-        cout << "=================================\n";
-        cout << "   SISTEMA DE GESTION HOTELERA\n";
-        cout << "=================================\n";
-        cout << "1. Administrador\n";
-        cout << "2. Recepcionista\n";
-        cout << "3. Consulta\n";
-        cout << "0. Salir\n";
-        cout << "=================================\n";
+        system("cls");
+
+        cout << "================================="<<endl;
+        cout << "   SISTEMA DE GESTION HOTELERA"<<endl;
+        cout << "================================="<<endl;
+        cout << "\t1. Administrador"<<endl;
+        cout << "\t2. Recepcionista"<<endl;
+        cout << "\t3. Consulta"<<endl;
+        cout << "\t0. Salir"<<endl;
+        cout << "================================="<<endl;
         cout << "Seleccione una opcion: ";
         cin >> opcion;
 
-        switch(opcion) {
-
+        switch(opcion) 
+        {
             case 1:
                 menuAdministrador();
+                system("pause");
                 break;
 
             case 2:
-            
                 break;
 
             case 3:
@@ -37,14 +48,19 @@ int main() {
                 break;
 
             case 0:
-                cout << "Hasta luego.\n";
+                cout << "Saliendo del sistema."<<endl;
                 break;
 
             default:
-                cout << "Opcion invalida.\n";
+                if (opcion != 0)
+                {
+                    cout << "Opcion no valida." << endl;
+                    system("pause");
+                }
+                break;
         }
 
     } while(opcion != 0);
 
-    return 0;
+    system("pause");
 }
