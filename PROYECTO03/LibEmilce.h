@@ -11,6 +11,7 @@ void ModificarHabitacion();
 void DarBajaHabitacion();
 void ReportesFinancieros();
 void menuAdministrador();
+void ReportesFinancieros();
 
 void RegistrarUsuario()
 {
