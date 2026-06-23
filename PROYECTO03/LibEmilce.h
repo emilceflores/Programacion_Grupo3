@@ -30,9 +30,16 @@ void RegistrarUsuario()
         //la contraseña del usuario
         cout << "Ingrese la password: ";
         cin >> usuario.password;
-        //el rol del usuario
-        cout << "Ingrese el rol (1=Administrador, 2=Recepcionista): ";
-        cin >> usuario.rol;
+        do
+        {
+            cout << "Ingrese el rol (1=Administrador, 2=Recepcionista): ";
+            cin >> usuario.rol;
+            if (usuario.rol != 1 && usuario.rol != 2)
+            {
+                cout << "Error: Debe ingresar 1 o 2." << endl;
+            }
+            
+        } while (usuario.rol != 1 && usuario.rol != 2);
         
         usuario.activo = true;
 
@@ -58,13 +65,30 @@ void RegistrarHabitacion()
     archivo.open("HABITACIONES.BIN",ios::binary | ios::app);
     if (archivo.good())
     {
-        cout << "Ingrese el numero de habitacion: ";
-        cin >> habitacion.numero;
+        do
+        {
+            cout << "Ingrese el numero de habitacion: ";
+            cin >> habitacion.numero;
+            if (habitacion.numero <= 0)
+            {
+                cout << "Error: El numero debe ser mayor que cero." << endl;
+            }
+        } while (habitacion.numero <= 0);
+        
         cin.ignore();
         cout << "Ingrese el tipo de habitacion: ";
         cin.getline(habitacion.tipo,30);
-        cout << "Ingrese el precio por noche: ";
-        cin >> habitacion.precioNoche;
+
+        do
+        {
+            cout << "Ingrese el precio por noche: ";
+            cin >> habitacion.precioNoche;
+            if (habitacion.precioNoche < 0)
+            {
+                cout << "Error: El precio no puede ser negativo." << endl;
+            }
+        } while (habitacion.precioNoche < 0);
+        
         // La habitación inicia disponible
         habitacion.estado = 0;
         habitacion.activo = true;
@@ -122,10 +146,17 @@ void ModificarHabitacion()
 
                 // Mover el puntero de escritura al inicio del registro encontrado
                 archivo.seekp(-sizeof(Habitacion),ios::cur);
-            
-                cout << "\nIngrese el nuevo precio: ";
-                cin >> habitacion.precioNoche;
 
+                do
+                {
+                    cout << "\nIngrese el nuevo precio: ";
+                    cin >> habitacion.precioNoche;
+                    if (habitacion.precioNoche < 0)
+                    {
+                        cout << "Error: El precio no puede ser negativo."<< endl;
+                    }
+                } while (habitacion.precioNoche < 0);
+                
                 // Escribir los nuevos datos en el archivo
                 archivo.write((char*)&habitacion,sizeof(Habitacion));
                 cout << "\nHabitacion modificada correctamente."<< endl;
