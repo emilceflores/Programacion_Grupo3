@@ -38,8 +38,8 @@ void Mostrarmenu()
         switch(opcion)
         {
             case 1:
-                // Llama a la función de Login dentro de la librería de Jhoel
-                menuLoginPersonal(); 
+                
+                menuAdministrador(); 
                 system("pause");
                 break;
             
