@@ -1,4 +1,8 @@
- 
+//Materia:Programa I, Paralelo 4
+//Grupo 3
+//Autor:Emilce Jael Flores Gutierrez
+//Nombre del proyecto: Sistema de gestion hotelera, 
+//control de inventarios y facturaion integrada "Ceasars palace"
 #include <iostream>
 #include <fstream>
 
