@@ -1,3 +1,4 @@
+
 // Materia: Programacion I, Paralelo 4
 // Grupo: 3.
 // Autor: Jhoel Marco Machicado Flores.
@@ -6,12 +7,14 @@
 #include <fstream>
 #include <cstring>
 #include <cstdlib> 
-
-void menuAdministrador(); 
-void menuRecepcionista();  
+#include "libestructuras.h" 
 
 using namespace std;
 
+// PROTOTIPOS DE FUNCIONES
+
+void menuAdministrador(); 
+void menuRecepcionista();  
 void menuLoginPersonal();
 void menuConsultaClientes();
 void verMapaHabitaciones();
@@ -104,7 +107,7 @@ void menuLoginPersonal()
     }
 }
 
-// SUBMENÚ DE CONSULTA 
+// CONSULTA PARA CLIENTES
 void menuConsultaClientes() 
 {
     int opcConsulta = 0;
@@ -154,8 +157,7 @@ void menuConsultaClientes()
     } 
     while(opcConsulta != 0);
 }
-
-// MAPA DE HABITACIONES (ACTUALIZADO CON "EJECUTIVA / MATRIMONIAL")
+// MAPA DE HABITACIONES 
 void verMapaHabitaciones() 
 {
     Habitacion h;
@@ -225,7 +227,7 @@ void verMapaHabitaciones()
                 }
             }
             
-            // Colocamos las etiquetas informativas actualizadas tal como en el informe
+            // Categorías y precios fijos alineados a tu informe
             if (f == 10) {
                 cout << " Suite Presidencial\t| 700.00 Bs.";
             }
@@ -253,7 +255,7 @@ void verMapaHabitaciones()
     }
 }
 
-// CATÁLOGO DE PRECIOS
+// CATÁLOGO DE PRECIOS DE PRODUCTOS
 void verCatalogoPrecios() 
 {
     Producto p;
@@ -290,6 +292,7 @@ void verCatalogoPrecios()
 }
 
 // BUSCAR RESERVA POR CI
+
 void buscarReservaPorCI() 
 {
     int ciBuscar; 
@@ -335,210 +338,31 @@ void buscarReservaPorCI()
         system("cls");
         cout << "[ERROR]: No se pudo abrir el archivo de reservas." << endl;
     }
-}                {
-                    menuAdministrador(); 
-                } else if (u.rol == 2) 
-                {
-                    menuRecepcionista(); 
-                }
-            }
-        }
-        archivoUser.close();
-        
-        if (!ingreso) 
-        {
-            system("cls"); // OPORTUNO: Limpia la pantalla para que el error resalte inmediatamente
-            cout << "=== ERROR DE AUTENTICACION ===" << endl;
-            cout << "==============================" << endl;
-            cout << "\n[ERROR]: Usuario o contrasena incorrectos." << endl;
-            cout << "[AVISO]: Si es personal nuevo (Recepcionista), requiere registro previo del Administrador." << endl;
-            system("pause");
-        }
-    } 
-    else 
-    {
-        system("cls"); // OPORTUNO: Muestra el error de archivo de forma aislada
-        cout << "\n[ERROR]: No se pudo abrir el archivo de usuarios." << endl;
-        system("pause");
-    }
 }
 
-// SUBMENÚ DE CONSULTA 
-void menuConsultaClientes() 
+void menuAdministrador() 
 {
-    int opcConsulta = 0;
-    do 
-    {
-        system("cls");
-        cout << "=== CONSULTA PARA CLIENTES ===" << endl;
-        cout << "========================================" << endl;
-        cout << "\t1. Ver Mapa de Habitaciones en Tiempo Real" << endl;
-        cout << "\t2. Ver Catalogo de Productos y Precios" << endl;
-        cout << "\t3. Buscar Estado de Reserva por CI" << endl;
-        cout << "\t0. Volver al Menu Principal" << endl;
-        cout << "Seleccione una opcion: ";
-        cin >> opcConsulta;
-        
-        switch(opcConsulta) 
-        {
-            case 1:
-                verMapaHabitaciones();
-                system("pause");
-                break;
-                
-            case 2:
-                verCatalogoPrecios();
-                system("pause");
-                break;
-                
-            case 3:
-                buscarReservaPorCI();
-                system("pause");
-                break;
-                
-            case 0:
-                system("cls"); // OPORTUNO: Limpia antes de avisar que vuelve atrás
-                cout << "Regresando al menu principal..." << endl;
-                break;
-                
-            default:
-                if (opcConsulta != 0) 
-                {
-                    system("cls");
-                    cout << "Opcion no valida." << endl;
-                    system("pause");
-                }
-                break;
-        }
-    } 
-    while(opcConsulta != 0);
-}
-
-// MAPA DE HABITACIONES
-void verMapaHabitaciones() 
-{
-    Habitacion h;
-    ifstream archivo("HABITACIONES.BIN", ios::binary);
-    
     system("cls");
-    cout << "=== MAPA DE HABITACIONES ===" << endl;
-    cout << "===========================================" << endl;
-    cout << "Numero\tTipo\t\tEstado" << endl;
-    cout << "-------------------------------------------" << endl;
-
-    if (archivo) 
-    {
-        bool tieneDatos = false;
-        while (archivo.read((char*)&h, sizeof(Habitacion))) 
-        {
-            if (h.activo == true) 
-            {
-                tieneDatos = true;
-                cout << h.numero << "\t" << h.tipo << "\t\t";
-                if (h.estado == 0) {
-                    cout << "[LIBRE]" << endl;
-                } 
-                else 
-                {
-                    cout << "[OCUPADA]" << endl;
-                }
-            }
-        }
-        archivo.close();
-        
-        if (!tieneDatos) 
-        {
-            cout << "[AVISO]: No hay habitaciones registradas en el sistema." << endl;
-        }
-    } 
-    else 
-    {
-        cout << "[ERROR]: No se pudo abrir el archivo de habitaciones." << endl;
-    }
+    cout << "=== MENU ADMINISTRADOR ===" << endl;
+    cout << "1. Consultas generales de clientes" << endl;
+    cout << "0. Cerrar sesion" << endl;
+    cout << "Seleccione: ";
+    int op; cin >> op;
+    if (op == 1) menuConsultaClientes();
 }
 
-// CATÁLOGO DE PRECIOS
-void verCatalogoPrecios() 
+void menuRecepcionista() 
 {
-    Producto p;
-    ifstream archivo("PRODUCTOS.BIN", ios::binary);
-    
     system("cls");
-    cout << "=== CATALOGO DE PRODUCTOS Y PRECIOS ===" << endl;
-    cout << "=======================================" << endl;
-    cout << "ID\tNombre\t\tPrecio\tStock" << endl;
-    cout << "---------------------------------------" << endl;
-    
-    if (archivo) 
-    {
-        bool tieneProductos = false;
-        while (archivo.read((char*)&p, sizeof(Producto))) 
-        {
-            if (p.activo == true) 
-            {
-                tieneProductos = true;
-                cout << p.idProducto << "\t" << p.nombreProd << "\t\t" << p.precioVenta << " Bs.\t" << p.stock << endl;
-            }
-        }
-        archivo.close();
-        
-        if (!tieneProductos) 
-        {
-            cout << "[AVISO]: No hay productos registrados en el catalogo." << endl;
-        }
-    } 
-    else 
-    {
-        cout << "[ERROR]: No se pudo abrir el archivo de inventario." << endl;
-    }
+    cout << "=== MENU RECEPCIONISTA ===" << endl;
+    cout << "1. Consultas generales de clientes" << endl;
+    cout << "0. Cerrar sesion" << endl;
+    cout << "Seleccione: ";
+    int op; cin >> op;
+    if (op == 1) menuConsultaClientes();
 }
-
-// BUSCAR RESERVA POR CI
-void buscarReservaPorCI() 
+int main() 
 {
-    int ciBuscar; 
-    Reserva r;
-    bool encontro = false;
-    
-    system("cls");
-    cout << "=== BUSCAR ESTADO DE RESERVA POR CI ===" << endl;
-    cout << "=======================================" << endl;
-    cout << "Ingrese el CI del cliente: ";
-    cin >> ciBuscar;
-    
-    ifstream archivoRes("RESERVAS.BIN", ios::binary);
-    
-    if (archivoRes) 
-    {
-        // OPORTUNO: Limpiamos la pantalla justo después de que el usuario meta el CI, 
-        // así el resultado de la búsqueda se ve perfectamente ordenado arriba.
-        system("cls"); 
-        
-        while (archivoRes.read((char*)&r, sizeof(Reserva))) 
-        {
-            if (r.ciHuesped == ciBuscar && r.activo == true)
-            {
-                cout << "=== RESERVA ENCONTRADA ===" << endl;
-                cout << "---------------------------------------" << endl;
-                cout << "Codigo Reserva: " << r.idReserva << endl;
-                cout << "Habitacion asignada: " << r.numHabitacion << endl;
-                cout << "Fecha de ingreso: " << r.fechaIngreso.dia << "/" << r.fechaIngreso.mes << "/" << r.fechaIngreso.anio << endl;
-                cout << "Dias de estadia: " << r.diasEstadia << endl;
-                cout << "---------------------------------------" << endl;
-                encontro = true;
-            }
-        }
-        archivoRes.close();
-        
-        if (!encontro) 
-        {
-            cout << "=== BUSQUEDA FINALIZADA ===" << endl;
-            cout << "\n[Aviso]: No se encontro ninguna reserva activa para el CI: " << ciBuscar << endl;
-        }
-    } 
-    else 
-    {
-        system("cls");
-        cout << "[ERROR]: No se pudo abrir el archivo de reservas." << endl;
-    }
+    menuLoginPersonal();
+    return 0;
 }
