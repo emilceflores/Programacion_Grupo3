@@ -1,6 +1,6 @@
 // Materia: Programacion I, Paralelo 4
 // Grupo: 3.
-// Autor: Jhel Marco Machicado Flores.
+// Autor: Jhoel Marco Machicado Flores.
 // Nombre del proyecto : Sistema de gestion hotelera,control de inventarios y facturacionintegrada "ceasars palace"
 #include <iostream>
 #include <fstream>
