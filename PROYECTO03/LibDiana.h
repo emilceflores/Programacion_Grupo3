@@ -19,7 +19,7 @@ void menuRecepcionista()
     do
     {
         system("cls");
-        cout << "=== SUBMENU DE RECEPCION (DIANA) ===" << endl;
+        cout << "=== SUBMENU DE RECEPCION ===" << endl;
         cout << "====================================" << endl;
         cout << "\t1. Registrar Huesped (Check-In Presencial)" << endl;
         cout << "\t2. Crear Reserva Directa" << endl;
@@ -80,6 +80,7 @@ void menuRecepcionista()
     } while(opcRecepcion != 0);
 }
 //OPCION 6
+//------------------------------------------------------------------------------------------
 void verHabitacionesDisponibles()
 {
     Habitacion h;
@@ -112,6 +113,7 @@ void verHabitacionesDisponibles()
     }
 }
 // OPCION 2
+//-----------------------------------------------------------------------------------------
 void crearReservaDirecta()
 {
     Reserva nuevaR;
@@ -126,9 +128,11 @@ void crearReservaDirecta()
     cout << "=== OP2: CREAR RESERVA DIRECTA ===" << endl;
     cout << "==================================" << endl;
 
-    // Generación automática del ID leyendo RESERVAS.BIN
-    ifstream archivoLectura("RESERVAS.BIN", ios::binary);
-    if (archivoLectura.is_open())
+    // busqueda secuencial del ultimo ID registrado
+    ifstream archivoLectura;
+    archivoLectura.open("RESERVAS.BIN", ios::binary);
+    
+    if (archivoLectura.good())
     {
         while (archivoLectura.read((char*)&aux, sizeof(Reserva)))
         {
@@ -139,6 +143,7 @@ void crearReservaDirecta()
         }
         archivoLectura.close();
     }
+    
     nuevaR.idReserva = maxId + 1; 
     cout << "Codigo de Reserva Asignado: " << nuevaR.idReserva << endl;
     cout << "-----------------------------------------------" << endl;
@@ -147,16 +152,18 @@ void crearReservaDirecta()
     cin >> nuevaR.ciHuesped;
     cout << endl;
     
+    // Llamada  para mostrar los cuartos libres
     verHabitacionesDisponibles(); 
 
-    // habitacion seleccionada
     do
     {
         cout << "Seleccione el Numero de Habitacion para la reserva: ";
         cin >> habIngresada;
 
-        ifstream archivoHab("HABITACIONES.BIN", ios::binary);
-        if (archivoHab.is_open())
+        ifstream archivoHab;
+        archivoHab.open("HABITACIONES.BIN", ios::binary);
+        
+        if (archivoHab.good())
         {
             bool existe = false;
             bool libre = false;
@@ -185,10 +192,16 @@ void crearReservaDirecta()
             else
             {
                 nuevaR.numHabitacion = habIngresada;
-                habValida = true; 
-                cout << "Habitacion seleccionada con exito." << endl;
+                habValida = true; // el dato es correcto, rompe el bucle
+                cout << "[OK]: Habitacion seleccionada con exito." << endl;
             }
         }
+        /*else
+        {
+            //  pruebas sin archivos iniciales
+            nuevaR.numHabitacion = habIngresada;
+            habValida = true;
+        }*/
 
     } while (!habValida);
 
@@ -200,18 +213,140 @@ void crearReservaDirecta()
     cout << "Ingrese la cantidad de dias de estadia: ";
     cin >> nuevaR.diasEstadia;
 
-    nuevaR.activo = true; 
+    nuevaR.activo = true;
 
-    // Guardado  en el archivo binario
-    ofstream archivoEscritura("RESERVAS.BIN", ios::binary | ios::app);
-    if (archivoEscritura.is_open())
+    // Guardado en RESERVAS.BIN ,añadir
+    ofstream archivoEscritura;
+    archivoEscritura.open("RESERVAS.BIN", ios::binary | ios::app);
+    
+    if (archivoEscritura.good())
     {
         archivoEscritura.write((char*)&nuevaR, sizeof(Reserva));
         archivoEscritura.close();
-        cout << endl << "Reserva guardada con exito en RESERVAS.BIN" << endl;
+        cout << endl << "[OK]: Reserva guardada con exito en RESERVAS.BIN" << endl;
     }
     else
     {
-        cout << endl << "[ERROR]: No se pudo abrir RESERVAS.BIN" << endl;
+        cout << endl << "[ERROR]: No se pudo abrir el archivo para escribir." << endl;
+    }
+}
+//OPCION 1
+//-------------------------------------------------------------------------------------
+
+void registrarHuespedCheckIn()
+{
+    int habIngresada;
+    int diaHoy, mesHoy, anioHoy;
+    bool habitacionComprometida = false;
+    bool habitacionExisteYLibre = false;
+    
+    Reserva r;
+    Habitacion h;
+    Huesped nuevoH; 
+
+    system("cls");
+    cout << "=== OP1: REGISTRAR HUÉSPED (CHECK-IN PRESENCIAL) ===" << endl;
+    cout << "====================================================" << endl;
+
+    // 1. Captura de la fecha actual de control (Meses 1-12, Días 1-30)
+    cout << "Ingrese la Fecha de Hoy (Control de Agenda):" << endl;
+    cout << "\tDia (1-30): "; cin >> diaHoy;
+    cout << "\tMes (1-12): "; cin >> mesHoy;
+    cout << "\tAño: "; cin >> anioHoy;
+
+    cout << "\nIngrese el Numero de Habitacion que el huesped va a ocupar: ";
+    cin >> habIngresada;
+
+    ifstream archivoRes;
+    archivoRes.open("RESERVAS.BIN", ios::binary);
+
+    if (archivoRes.good())
+    {
+        while (archivoRes.read((char*)&r, sizeof(Reserva)) && !habitacionComprometida)
+        {
+            if (r.numHabitacion == habIngresada && r.activo == true)
+            {
+                if (r.fechaIngreso.mes == mesHoy && r.fechaIngreso.anio == anioHoy)
+                {
+                    int diaFinReserva = r.fechaIngreso.dia + r.diasEstadia;
+                    
+                    if (diaHoy >= r.fechaIngreso.dia && diaHoy < diaFinReserva)
+                    {
+                        habitacionComprometida = true; 
+                    }
+                }
+            }
+        }
+        archivoRes.close();
+    }
+
+    // 3. PASO B: VERIFICAR INFRAESTRUCTURA Y MODIFICAR ESTADO EN "HABITACIONES.BIN"
+    if (!habitacionComprometida)
+    {
+        fstream archivoHab;
+        archivoHab.open("HABITACIONES.BIN", ios::in | ios::out | ios::binary);
+
+        if (archivoHab.good())
+        {
+            while (archivoHab.read((char*)&h, sizeof(Habitacion)) && !habitacionExisteYLibre)
+            {
+                if (h.numero == habIngresada && h.activo == true)
+                {
+                    if (h.estado == 0) // esta libre de verdad
+                    {
+                        habitacionExisteYLibre = true;
+                        h.estado = 1; // cambiamos el estado a Ocupada (1)
+
+                        // RETROCEDEMOS 
+                        archivoHab.seekp(-sizeof(Habitacion), ios::cur);
+                        archivoHab.write((char*)&h, sizeof(Habitacion));
+                    }
+                }
+            }
+            archivoHab.close();
+        }
+    }
+    
+    if (habitacionComprometida)
+    {
+        cout << "\n[ERROR]: La habitacion No. " << habIngresada << " no se puede asignar." << endl;
+        cout << "Motivo: Cuenta con una RESERVA VIGENTE para el dia de hoy." << endl;
+    }
+    else if (!habitacionExisteYLibre)
+    {
+        cout << "\n[ERROR]: No se pudo realizar el Check-In." << endl;
+        cout << "Motivo: La habitacion no existe, no esta activa o YA SE ENCUENTRA OCUPADA." << endl;
+    }
+    else
+    {
+        cout << "\n--- FICHA DE REGISTRO DEL HUÉSPED ---" << endl;
+        cout << "Ingrese el CI del Huesped: ";
+        cin >> nuevoH.ci; 
+        
+        cin.ignore(); // Limpia el buffer
+        cout << "Ingrese el Nombre Completo (Max 30 caracteres): ";
+        cin.getline(nuevoH.nombre, 30);
+        
+        cout << "Ingrese la Procedencia (pais:) ";
+        cin.getline(nuevoH.procedencia, 30); 
+        
+        cout << "Ingrese el Numero de Celular: ";
+        cin >> nuevoH.celular;
+
+        nuevoH.numHabitacion = habIngresada; 
+
+        ofstream archivoHuesped;
+        archivoHuesped.open("HUESPEDES.BIN", ios::binary | ios::app);
+        
+        if (archivoHuesped.good())
+        {
+            archivoHuesped.write((char*)&nuevoH, sizeof(Huesped));
+            archivoHuesped.close();
+        }
+
+        cout << "\n====================================================" << endl;
+        cout << "[OK]: Check-In y Datos del Huesped guardados con exito." << endl;
+        cout << "La habitacion No. " << habIngresada << " paso a estado: [OCUPADA]." << endl;
+        cout << "====================================================" << endl;
     }
 }
