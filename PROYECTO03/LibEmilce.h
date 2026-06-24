@@ -5,6 +5,8 @@
 //control de inventarios y facturaion integrada "Ceasars palace"
 #include <iostream>
 #include <fstream>
+#include <cstring>
+#include "LibEstructuras.h"
 
 using namespace std;
 
@@ -16,7 +18,7 @@ void menuReportes();
 void menuAdministrador();
 void ReportesFinancieros();
 void MostrarReporteIngresosCaja();
-void MostrarReporteReservasVigentes();
+void MostrarReportesReservasVigentes();
 void MostrarReporteReservasCanceladas();
 
 
@@ -178,6 +180,7 @@ void ModificarDatosGenerales()
                 } while (u.rol != 1 && u.rol != 2);
 
                 archivo.write((char*)&u, sizeof(Usuario));
+                break;
             }
         }
         archivo.close();
@@ -203,6 +206,7 @@ void ModificarDatosGenerales()
                 } while (h.precioNoche < 0);
 
                 archivo.write((char*)&h, sizeof(Habitacion));
+                break;
             }
         }
 
@@ -235,6 +239,7 @@ void ModificarDatosGenerales()
                 } while (p.stock < 0);
 
                 archivo.write((char*)&p, sizeof(Producto));
+                break;
             }
         }
         archivo.close();
@@ -250,6 +255,7 @@ void menuReportes()
         cout << "1. Reporte de Habitaciones\n";
         cout << "2. Reporte de Productos\n";
         cout << "3. Reporte de Ingresos\n";
+        cout << "4. Reportes Financieros\n";
         cout << "0. Volver\n";
         cout << "Seleccione: ";
         cin >> opcion;
@@ -355,7 +361,7 @@ void ReportesFinancieros()
                 break;
 
             case 2: 
-                MostrarReporteReservasVigentes(); 
+                MostrarReportesReservasVigentes(); 
                 system("pause");
                 break;
 
@@ -476,20 +482,19 @@ void MostrarReporteReservasCanceladas()
                 cout << "ID Reserva:     " << r.idReserva << endl;
                 cout << "CI Huesped:     " << r.ciHuesped << endl;
                 cout << "Habitacion:     " << r.numHabitacion << endl;
-                cout << "Fecha Prevista: " << r.fechaIngreso.dia << "/" 
-                     << r.fechaIngreso.mes << "/" << r.fechaIngreso.anio << endl;
+                cout << "Fecha Prevista: " << r.fechaIngreso.dia << "/" << r.fechaIngreso.mes << "/" << r.fechaIngreso.anio << endl;
                 cout << "-------------------------------------------------------" << endl;
             }
         }
         if (!hayCanceladas)
         {
-            cout << "[SISTEMA]: No existen registros de reservas canceladas." << endl;
+            cout << "No existen registros de reservas canceladas." << endl;
         }
         archivo.close();
     }
     else
     {
-        cout << "[SISTEMA]: El archivo RESERVAS.BIN no existe o esta vacio." << endl;
+        cout << "El archivo RESERVAS.BIN no existe o esta vacio." << endl;
     }
 }
 void menuAdministrador()
@@ -536,8 +541,8 @@ void menuAdministrador()
                 break;
 
             case 0:
-                cout << "Opcion no valida." << endl;
-            break;
+                cout << "Cerrando sesion..." << endl;
+                break;
         }
 
         system("pause");
