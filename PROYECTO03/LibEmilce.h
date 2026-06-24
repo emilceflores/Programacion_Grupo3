@@ -14,48 +14,53 @@ void RegistrarProducto();
 void ModificarDatosGenerales();
 void menuReportes();
 void menuAdministrador();
+void ReportesFinancieros();
+void MostrarReporteIngresosCaja();
+void MostrarReporteReservasVigentes();
+void MostrarReporteReservasCanceladas();
+
 
 void RegistrarUsuario()
 {
     Usuario usuario;
-    ofstream archivo;
 
-    cout << "REGISTRAR USUARIO" << endl;
-    cout << "=================" << endl;
-    archivo.open("USUARIOS.BIN", ios::binary | ios::app);
+    ofstream archivo("USUARIOS.BIN", ios::binary | ios::app);
 
-    if (archivo.good())
+    cout << "\nREGISTRAR USUARIO\n";
+    cout << "=================\n";
+
+    if (!archivo.is_open())
     {
-        //para iniciar sesión
-        cout << "Ingrese el login: ";
-        cin >> usuario.login;
-        //la contraseña del usuario
-        cout << "Ingrese la password: ";
-        cin >> usuario.password;
-        do
-        {
-            cout << "Ingrese el rol (1=Administrador, 2=Recepcionista): ";
-            cin >> usuario.rol;
-            if (usuario.rol != 1 && usuario.rol != 2)
-            {
-                cout << "Error: Debe ingresar 1 o 2." << endl;
-            }
-            
-        } while (usuario.rol != 1 && usuario.rol != 2);
-        
-        usuario.activo = true;
-
-        archivo.write((char*)&usuario, sizeof(Usuario));
-        cout << "\nUsuario registrado correctamente." << endl;
-       
+        cout << "Error: No se pudo abrir el archivo USUARIOS.BIN\n";
+        return;
     }
-    else
-    {
-        cout << "Error: No se pudo abrir el archivo USUARIOS.BIN" << endl;
-    } 
-    archivo.close();
-}
 
+    cout << "Ingrese el login: ";
+    cin >> usuario.login;
+
+    cout << "Ingrese la password: ";
+    cin >> usuario.password;
+
+    do
+    {
+        cout << "Ingrese el rol (1=Administrador, 2=Recepcionista): ";
+        cin >> usuario.rol;
+
+        if (usuario.rol != 1 && usuario.rol != 2)
+        {
+            cout << "Error: Debe ingresar 1 o 2.\n";
+        }
+
+    } while (usuario.rol != 1 && usuario.rol != 2);
+
+    usuario.activo = true;
+
+    archivo.write((char*)&usuario, sizeof(Usuario));
+
+    archivo.close();
+
+    cout << "\n[OK] Usuario registrado correctamente en USUARIOS.BIN\n";
+}
 void RegistrarHabitacion()
 {
     Habitacion habitacion;
@@ -139,7 +144,7 @@ void RegistrarProducto()
 
 void ModificarDatosGenerales()
 {
-    int opc;
+    int opcion;
 
     cout << "\nMODIFICAR DATOS GENERALES\n";
     cout << "=========================\n";
@@ -147,9 +152,9 @@ void ModificarDatosGenerales()
     cout << "2. Modificar Habitacion\n";
     cout << "3. Modificar Producto\n";
     cout << "Seleccione: ";
-    cin >> opc;
+    cin >> opcion;
 
-    if (opc == 1)
+    if (opcion == 1)
     {
         Usuario u;
         fstream archivo("USUARIOS.BIN", ios::in | ios::out | ios::binary);
@@ -177,7 +182,7 @@ void ModificarDatosGenerales()
         }
         archivo.close();
     }
-    if (opc == 2)
+    if (opcion == 2)
     {
         Habitacion h;
         fstream archivo("HABITACIONES.BIN", ios::in | ios::out | ios::binary);
@@ -204,7 +209,7 @@ void ModificarDatosGenerales()
         archivo.close();
     }
 
-    if (opc == 3)
+    if (opcion == 3)
     {
         Producto p;
         fstream archivo("PRODUCTOS.BIN", ios::in | ios::out | ios::binary);
@@ -323,10 +328,170 @@ void menuReportes()
             cout << "\nTOTAL INGRESOS: "<< total <<" Bs" << endl;
             archivo.close();
         }
-
+        if (opcion == 4)
+        {
+           ReportesFinancieros();
+        }
+        
     } while (opcion != 0);
 }
+void ReportesFinancieros()
+{
+    int opcion;
+    do 
+    {
+        cout << "\nREPORTES FINANCIEROS\n";
+        cout << "1. Ingresos Caja\n";
+        cout << "2. Reservas Vigentes\n";
+        cout << "3. Reservas Canceladas\n";
+        cout << "0. Volver\n";
+        cin >> opcion;
 
+        switch(opcion)
+        {
+            case 1: 
+                MostrarReporteIngresosCaja(); 
+                system("pause");
+                break;
+
+            case 2: 
+                MostrarReporteReservasVigentes(); 
+                system("pause");
+                break;
+
+            case 3: 
+                MostrarReporteReservasCanceladas(); 
+                system("pause");
+                break;
+
+            case 0:
+                cout << "\nVolviendo al menu principal..." << endl;
+                break;
+
+            default:
+                cout << "\n[ERROR]: Opcion no valida." << endl;
+                system("pause");
+                break;
+        }
+    } while(opcion != 0);
+
+}
+void MostrarReporteIngresosCaja()
+{
+    system("cls");
+    PagoFactura factura;
+    ifstream archivo("FACTURAS.BIN", ios::binary);
+    float total = 0;
+    cout << "=======================================================" << endl;
+    cout << "     REPORTE DE PAGOS E INGRESOS TOTALES DE CAJA       " << endl;
+    cout << "=======================================================" << endl;
+
+    if (archivo.good())
+    {
+        bool hayPagos = false;
+        while (archivo.read((char*)&factura, sizeof(PagoFactura)))
+        {
+            if (factura.activo == true)
+            {
+                hayPagos = true;
+                cout << "ID Factura:     " << factura.idFactura << endl;
+                cout << "CI Huesped:     " << factura.ciHuesped << endl;
+                cout << "Habitacion:     " << factura.numHabitacion << endl;
+                cout << "Monto Cobrado:  " << factura.montoTotal << " Bs." << endl;
+                cout << "Fecha de Pago:  " << factura.fechaPago.dia << "/" 
+                     << factura.fechaPago.mes << "/" << factura.fechaPago.anio << endl;
+                cout << "-------------------------------------------------------" << endl;
+                
+                total += factura.montoTotal;
+            }
+        }
+        if (!hayPagos)
+        {
+            cout << "[SISTEMA]: No se han realizado cobros ni Check-Outs todavia." << endl;
+        }
+        else
+        {
+            cout << "\n>>> TOTAL GENERAL RECAUDADO EN CAJA: " << total << " Bs. <<<" << endl;
+        }
+        archivo.close();
+    }
+    else
+    {
+        cout << "[SISTEMA]: El archivo PAGOS.BIN no existe o esta vacio (Sin movimientos de caja)." << endl;
+    }
+}
+
+void MostrarReportesReservasVigentes()
+{
+    system("cls");
+    Reserva r;
+    ifstream archivo("RESERVAS.BIN", ios::binary);
+    cout << "=======================================================" << endl;
+    cout << "     REPORTE DE RESERVAS VIGENTES (CALENDARIO)         " << endl;
+    cout << "=======================================================" << endl;
+    if (archivo.good())
+    {
+        bool hayReservas = false;
+        while (archivo.read((char*)&r, sizeof(Reserva)))
+        {
+            if (r.activo == true)
+            {
+                hayReservas = true;
+                cout << "ID Reserva:     " << r.idReserva << endl;
+                cout << "CI Huesped:     " << r.ciHuesped << endl;
+                cout << "Habitacion:     " << r.numHabitacion << endl;
+                cout << "Fecha Ingreso:  " << r.fechaIngreso.dia << "/" 
+                     << r.fechaIngreso.mes << "/" << r.fechaIngreso.anio << endl;
+                cout << "Dias Estadio:   " << r.diasEstadia << " dia(s)." << endl;
+                cout << "-------------------------------------------------------" << endl;
+            }
+        }
+        if (!hayReservas)
+        {
+            cout << "[SISTEMA]: No existen reservas vigentes en este momento." << endl;
+        }
+        archivo.close();
+    }
+    else
+    {
+        cout << "[SISTEMA]: El archivo RESERVAS.BIN no existe o esta vacio." << endl;
+    }
+}
+void MostrarReporteReservasCanceladas()
+{
+    system("cls");
+    Reserva r;
+    ifstream archivo("RESERVAS.BIN", ios::binary);
+        cout << "=======================================================" << endl;
+    cout << "     REPORTE DE RESERVAS CANCELADAS (HISTORIAL)        " << endl;
+    cout << "=======================================================" << endl;
+    if (archivo.good())
+    {
+        bool hayCanceladas = false;
+        while (archivo.read((char*)&r, sizeof(Reserva)))
+        {
+            if (r.activo == false)
+            {
+                hayCanceladas = true;
+                cout << "ID Reserva:     " << r.idReserva << endl;
+                cout << "CI Huesped:     " << r.ciHuesped << endl;
+                cout << "Habitacion:     " << r.numHabitacion << endl;
+                cout << "Fecha Prevista: " << r.fechaIngreso.dia << "/" 
+                     << r.fechaIngreso.mes << "/" << r.fechaIngreso.anio << endl;
+                cout << "-------------------------------------------------------" << endl;
+            }
+        }
+        if (!hayCanceladas)
+        {
+            cout << "[SISTEMA]: No existen registros de reservas canceladas." << endl;
+        }
+        archivo.close();
+    }
+    else
+    {
+        cout << "[SISTEMA]: El archivo RESERVAS.BIN no existe o esta vacio." << endl;
+    }
+}
 void menuAdministrador()
 {
     int opcion = 0;
