@@ -15,7 +15,6 @@ void ModificarDatosGenerales();
 void menuReportes();
 void menuAdministrador();
 
-
 void RegistrarUsuario()
 {
     Usuario usuario;
@@ -140,90 +139,99 @@ void RegistrarProducto()
 
 void ModificarDatosGenerales()
 {
-    int opcion;
+    int opc;
 
     cout << "\nMODIFICAR DATOS GENERALES\n";
     cout << "=========================\n";
-    cout << "1. Modificar Habitacion\n";
-    cout << "2. Modificar Producto (stock/precio)\n";
+    cout << "1. Modificar Usuario\n";
+    cout << "2. Modificar Habitacion\n";
+    cout << "3. Modificar Producto\n";
     cout << "Seleccione: ";
-    cin >> opcion;
+    cin >> opc;
 
-    if (opcion == 1)
+    if (opc == 1)
     {
-        int numero;
+        Usuario u;
+        fstream archivo("USUARIOS.BIN", ios::in | ios::out | ios::binary);
+        char login[30];
+
+        cout << "Login del usuario: ";
+        cin >> login;
+
+        while (archivo.read((char*)&u, sizeof(Usuario)))
+        {
+            if (strcmp(u.login, login) == 0 && u.activo)
+            {
+                archivo.seekp(-sizeof(Usuario), ios::cur);
+
+                cout << "Nuevo password: ";
+                cin >> u.password;
+
+                do {
+                    cout << "Nuevo rol (1 Admin / 2 Recepcionista): ";
+                    cin >> u.rol;
+                } while (u.rol != 1 && u.rol != 2);
+
+                archivo.write((char*)&u, sizeof(Usuario));
+            }
+        }
+        archivo.close();
+    }
+    if (opc == 2)
+    {
         Habitacion h;
         fstream archivo("HABITACIONES.BIN", ios::in | ios::out | ios::binary);
+        int num;
 
         cout << "Numero de habitacion: ";
-        cin >> numero;
-        bool encontrado = false;
+        cin >> num;
+
         while (archivo.read((char*)&h, sizeof(Habitacion)))
         {
-            if (h.numero == numero && h.activo)
+            if (h.numero == num && h.activo)
             {
-                encontrado = true;
                 archivo.seekp(-sizeof(Habitacion), ios::cur);
-                cin.ignore();
-                cout << "Nuevo tipo de habitacion: ";
-                cin.getline(h.tipo, 30);
 
                 do {
                     cout << "Nuevo precio por noche: ";
                     cin >> h.precioNoche;
-                    if (h.precioNoche < 0)
-                        cout << "ERROR: No se permiten numeros negativos.\n";
-
                 } while (h.precioNoche < 0);
 
                 archivo.write((char*)&h, sizeof(Habitacion));
-                cout << "Habitacion modificada correctamente.\n";
-                
             }
         }
-
-        if (!encontrado)
-            cout << "Habitacion no encontrada.\n";
 
         archivo.close();
     }
 
-    if (opcion == 2)
+    if (opc == 3)
     {
-        int id;
         Producto p;
         fstream archivo("PRODUCTOS.BIN", ios::in | ios::out | ios::binary);
+        int id;
 
         cout << "ID producto: ";
         cin >> id;
-        bool encontrado = false;
 
         while (archivo.read((char*)&p, sizeof(Producto)))
         {
             if (p.idProducto == id && p.activo)
             {
-                encontrado = true;
                 archivo.seekp(-sizeof(Producto), ios::cur);
+
                 do {
                     cout << "Nuevo precio: ";
                     cin >> p.precioVenta;
-                    if (p.precioVenta < 0)
-                        cout << "ERROR: No se permiten numeros negativos.\n";
                 } while (p.precioVenta < 0);
 
                 do {
                     cout << "Nuevo stock: ";
                     cin >> p.stock;
-                    if (p.stock < 0)
-                        cout << "ERROR: No se permiten numeros negativos.\n";
                 } while (p.stock < 0);
 
                 archivo.write((char*)&p, sizeof(Producto));
-                cout << "Producto modificado correctamente.\n";
             }
         }
-        if (!encontrado)
-            cout << "Producto no encontrado.\n";
         archivo.close();
     }
 }
@@ -312,7 +320,7 @@ void menuReportes()
                     total += factura.montoTotal;
                 }
             }
-            cout << "\nTOTAL INGRESOS: Bs. " << total << endl;
+            cout << "\nTOTAL INGRESOS: "<< total <<" Bs" << endl;
             archivo.close();
         }
 
