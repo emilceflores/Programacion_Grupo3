@@ -323,7 +323,7 @@ void registrarHuespedCheckIn()
         cout << "Ingrese el CI del Huesped: ";
         cin >> nuevoH.ci; 
         
-        cin.ignore(); // Limpia el buffer
+        cin.ignore();
         cout << "Ingrese el Nombre Completo (Max 30 caracteres): ";
         cin.getline(nuevoH.nombre, 30);
         
@@ -348,5 +348,352 @@ void registrarHuespedCheckIn()
         cout << "[OK]: Check-In y Datos del Huesped guardados con exito." << endl;
         cout << "La habitacion No. " << habIngresada << " paso a estado: [OCUPADA]." << endl;
         cout << "====================================================" << endl;
+    }
+}
+//opcion 3
+//---------------------------------------------------------------------------------------------
+
+void buscarReservaActivaCI()
+{
+    int ciBuscar;
+    Reserva r;
+    bool encontroAlMenosUna = false; //para saber si el cliente tiene registros
+
+    system("cls");
+    cout << "=== OP3: BUSCAR RESERVA ACTIVA POR CI ===" << endl;
+    cout << "=========================================" << endl;
+
+    cout << "Ingrese el CI del Huesped a buscar: ";
+    cin >> ciBuscar;
+
+    ifstream archivoRes;
+    archivoRes.open("RESERVAS.BIN", ios::binary);
+
+    if (archivoRes.good())
+    {
+        cout << "\n-------------------------------------------------" << endl;
+        cout << "Resultados de Busqueda para el CI: " << ciBuscar << endl;
+        cout << "-------------------------------------------------" << endl;
+
+        while (archivoRes.read((char*)&r, sizeof(Reserva)))
+        {
+            if (r.ciHuesped == ciBuscar && r.activo == true)
+            {
+                encontroAlMenosUna = true; // si hay registro
+
+                cout << "-> ID Reserva: " << r.idReserva << endl;
+                cout << "   Habitacion Asignada: " << r.numHabitacion << endl;
+                cout << "   Fecha de Ingreso: " << r.fechaIngreso.dia << "/" 
+                     << r.fechaIngreso.mes << "/" << r.fechaIngreso.anio << endl;
+                cout << "   Dias de Estadia: " << r.diasEstadia << endl;
+                cout << "-------------------------------------------------" << endl;
+            }
+        }
+        archivoRes.close();
+
+        if (!encontroAlMenosUna)
+        {
+            cout << "[AVISO]: No se encontraron reservas activas para el CI: " << ciBuscar << endl;
+            cout << "Procediendo a mostrar las opciones libres en el hotel...\n" << endl;
+            system("pause");
+            
+            verHabitacionesDisponibles(); 
+        }
+    }
+    else
+    {
+        cout << "\n[AVISO]: El archivo de reservas aun no existe en el sistema." << endl;
+        cout << "(Debe crear una reserva en la Opcion 2 o registrar un huesped en la Opcion 1)." << endl;
+        cout << "\nMostrando habitaciones del hotel para registro directo...\n" << endl;
+        system("pause");
+        
+        // si el archivo ni existe tambien  mostramos qu cuartos hay libres
+        verHabitacionesDisponibles();
+    }
+}
+//opcion 4
+//----------------------------------------------------------------------------------------------
+void registrarVentaProducto()
+{
+    int habBuscar, prodBuscar, cantVenta;
+    int maxIdConsumo = 0;
+    
+    bool habitacionOcupada = false;
+    bool productoExisteYStock = false;
+    
+    Habitacion h;
+    Producto p;
+    ConsumoExtra nuevoC;
+    ConsumoExtra auxC;
+
+    system("cls");
+    cout << "=== OP4: REGISTRAR VENTA DE PRODUCTO (CONSUMO EXTRA) ===" << endl;
+    cout << "========================================================" << endl;
+
+    // GENERAR ID CORRELATIVO AUTOMATICO PARA EL CONSUMO
+    ifstream archivoIdC;
+    archivoIdC.open("CONSUMOS.BIN", ios::binary);
+    if (archivoIdC.good())
+    {
+        while (archivoIdC.read((char*)&auxC, sizeof(ConsumoExtra)))
+        {
+            if (auxC.idConsumo > maxIdConsumo)
+            {
+                maxIdConsumo = auxC.idConsumo;
+            }
+        }
+        archivoIdC.close();
+    }
+    nuevoC.idConsumo = maxIdConsumo + 1;
+
+    // VALIDAR QUE LA HABITACION EXISTA Y ESTE OCUPADA
+    cout << "Ingrese el Numero de Habitacion del huesped: ";
+    cin >> habBuscar;
+
+    ifstream archivoHab;
+    archivoHab.open("HABITACIONES.BIN", ios::binary);
+    if (archivoHab.good())
+    {
+        while (archivoHab.read((char*)&h, sizeof(Habitacion)) && !habitacionOcupada)
+        {
+            if (h.numero == habBuscar && h.activo == true && h.estado == 1)
+            {
+                habitacionOcupada = true; // confirmado ,el cuarto esta ocupado y activo
+            }
+        }
+        archivoHab.close();
+    }
+
+    //SI LA HABITACION ES VALIDA, PROCEDEMOS CON EL PRODUCTO e INVENTARIO
+    if (habitacionOcupada)
+    {
+        cout << "Ingrese el ID del Producto a vender: ";
+        cin >> prodBuscar;
+        cout << "Ingrese la Cantidad: ";
+        cin >> cantVenta;
+
+        //abrimos PRODUCTOS.BIN en modo lectura/escritura para actualizar el stock
+        fstream archivoProd;
+        archivoProd.open("PRODUCTOS.BIN", ios::in | ios::out | ios::binary);
+
+        if (archivoProd.good())
+        {
+            while (archivoProd.read((char*)&p, sizeof(Producto)) && !productoExisteYStock)
+            {
+                if (p.idProducto == prodBuscar && p.activo == true)
+                {
+                    if (p.stock >= cantVenta)
+                    {
+                        productoExisteYStock = true; // Hay stock suficiente
+
+                        // Restamos el stock
+                        p.stock = p.stock - cantVenta;
+
+                        // modificamos
+                        archivoProd.seekp(-sizeof(Producto), ios::cur);
+                        archivoProd.write((char*)&p, sizeof(Producto));
+                    }
+                }
+            }
+            archivoProd.close();
+        }
+
+        //SI EL PRODUCTO FUE VALIDADADO
+        if (productoExisteYStock)
+        {
+            nuevoC.numHabitacion = habBuscar;
+            nuevoC.idProducto = prodBuscar;
+            nuevoC.cantidad = cantVenta;
+            nuevoC.activo = true; 
+
+            ofstream archivoConsumo;
+            archivoConsumo.open("CONSUMOS.BIN", ios::binary | ios::app);
+            if (archivoConsumo.good())
+            {
+                archivoConsumo.write((char*)&nuevoC, sizeof(ConsumoExtra));
+                archivoConsumo.close();
+            }
+
+            cout << "\n====================================================" << endl;
+            cout << "[OK]: Venta registrada con exito (ID Consumo: " << nuevoC.idConsumo << ")." << endl;
+            cout << "Cargado a la Habitacion No. " << habBuscar << "." << endl;
+            cout << "Inventario actualizado correctamente en el Almacen." << endl;
+            cout << "====================================================" << endl;
+        }
+        else
+        {
+            cout << "\n[ERROR]: No se pudo realizar la venta." << endl;
+            cout << "Motivo: El ID del producto no existe, esta inactivo o NO CUENTA CON STOCK SUFICIENTE." << endl;
+        }
+    }
+    else
+    {
+        cout << "\n[ERROR]: No se puede cargar consumos a la Habitacion No. " << habBuscar << "." << endl;
+        cout << "Motivo: La habitacion no existe o actualmente se encuentra [DISPONIBLE]." << endl;
+        cout << "(Solo se pueden cargar consumos a habitaciones ocupadas)." << endl;
+    }
+}
+//OPCION 5
+//------------------------------------------------------------------------------------------------------------------------------
+void calcularPagoCheckOut()
+{
+    long int ciBuscar;
+    int habOcupada = 0;
+    int diasDeEstadia = 0;
+    float precioPorNoche = 0.0;
+    
+    float subtotalHospedaje = 0.0;
+    float subtotalConsumos = 0.0;
+    float totalFactura = 0.0;
+
+    bool huespedEncontrado = false;
+    bool reservaEncontrada = false;
+    bool habitacionEncontrada = false;
+
+    Huesped hu;
+    Reserva reserv;
+    Habitacion habit;
+    ConsumoExtra consumos;
+    Producto prroductos;
+
+    system("cls");
+    cout << "=== OP5: CALCULAR PAGO Y CHECK-OUT (CERRAR ESTADÍA) ===" << endl;
+    cout << "=======================================================" << endl;
+
+    cout << "Ingrese el CI del Huesped que realiza el Check-Out: ";
+    cin >> ciBuscar;
+
+    // LOCALIZAR AL HUESPED ACTIVO EN EL HOTEL
+    fstream archivoHues;
+    archivoHues.open("HUESPEDES.BIN", ios::in | ios::out | ios::binary);
+    if (archivoHues.good())
+    {
+        while (archivoHues.read((char*)&hu, sizeof(Huesped)) && !huespedEncontrado)
+        {
+            if (hu.ci == ciBuscar && hu.activo == true)
+            {
+                huespedEncontrado = true;
+                habOcupada = hu.numHabitacion; //extraemos la habitacion que usaba
+
+                // BAJA LOGICA modificamos el registro 
+                hu.activo = false; 
+                
+                // SOBREESCRITURA
+                archivoHues.seekp(-sizeof(Huesped), ios::cur);
+                archivoHues.write((char*)&hu, sizeof(Huesped));
+            }
+        }
+        archivoHues.close();
+    }
+
+    // SI EL HUESPED EXISTE 
+    if (huespedEncontrado)
+    {
+        //BUSCAR LA DURACION EN RESERVAS.BIN
+        ifstream archivoRes;
+        archivoRes.open("RESERVAS.BIN", ios::binary);
+        if (archivoRes.good())
+        {
+            while (archivoRes.read((char*)&reserv, sizeof(Reserva)) && !reservaEncontrada)
+            {
+                if (reserv.ciHuesped == ciBuscar && reserv.numHabitacion == habOcupada && reserv.activo == true)
+                {
+                    reservaEncontrada = true;
+                    diasDeEstadia = reserv.diasEstadia;
+                }
+            }
+            archivoRes.close();
+        }
+
+        // CONTROL DE SEGURIDAD: Si entro sin reserva previa por la Opcion 1, contamos minimo 1 día
+        if (!reservaEncontrada)
+        {
+            cout << "\n[SISTEMA]: El cliente no tenia reserva previa (Ingreso directo por Opcion 1)." << endl;
+            cout << "Ingrese la cantidad de dias que se hospedo el cliente: ";
+            cin >> diasDeEstadia;
+            
+            if(diasDeEstadia <= 0) {
+                diasDeEstadia = 1; // Validamos que al menos cobre un día
+            }
+        }
+
+        // OBTENER EL PRECIO DE LA HABITACION Y LIBERARLA (estado = 0)
+        fstream archivoHab;
+        archivoHab.open("HABITACIONES.BIN", ios::in | ios::out | ios::binary);
+        if (archivoHab.good())
+        {
+            while (archivoHab.read((char*)&habit, sizeof(Habitacion)) && !habitacionEncontrada)
+            {
+                if (habit.numero == habOcupada && habit.activo == true)
+                {
+                    habitacionEncontrada = true;
+                    precioPorNoche = habit.precioNoche;
+
+                    // LIBERACION: Cambiar estado a Disponible (0) 
+                    habit.estado = 0; 
+                    
+                    // MODIFICACION 
+                    archivoHab.seekp(-sizeof(Habitacion), ios::cur);
+                    archivoHab.write((char*)&habit, sizeof(Habitacion));
+                }
+            }
+            archivoHab.close();
+        }
+
+        //LIQUIDACION DE CONSUMOS EXTRAS
+        ifstream archivoCons;
+        archivoCons.open("CONSUMOS.BIN", ios::binary);
+        if (archivoCons.good())
+        {
+            while (archivoCons.read((char*)&consumos, sizeof(ConsumoExtra)))
+            {
+                if (consumos.numHabitacion == habOcupada && consumos.activo == true)
+                {
+                    // Por cada articulo consumido, buscamos su precio en PRODUCTOS.BIN 
+                    ifstream archivoProd;
+                    archivoProd.open("PRODUCTOS.BIN", ios::binary);
+                    if (archivoProd.good())
+                    {
+                        bool prodEncontrado = false;
+                        while (archivoProd.read((char*)&prroductos, sizeof(Producto)) && !prodEncontrado)
+                        {
+                            if (prroductos.idProducto == consumos.idProducto)
+                            {
+                                prodEncontrado = true;
+                                subtotalConsumos += (consumos.cantidad * prroductos.precioVenta);
+                            }
+                        }
+                        archivoProd.close();
+                    }
+                }
+            }
+            archivoCons.close();
+        }
+
+        //OPERACIONES FINALES Y DESPLIEGUE DE LA FACTURA
+        subtotalHospedaje = diasDeEstadia * precioPorNoche;
+        totalFactura = subtotalHospedaje + subtotalConsumos;
+
+        cout << "\n=======================================================" << endl;
+        cout << "               FACTURA DE CHECK-OUT                    " << endl;
+        cout << "=======================================================" << endl;
+        cout << " CLIENTE CI:      " << ciBuscar << endl;
+        cout << " HABITACION NO.:  " << habOcupada << endl;
+        cout << " TIEMPO ESTADIA:  " << diasDeEstadia << " dia(s)." << endl;
+        cout << " PRECIO POR NOCHE:" << precioPorNoche << " Bs." << endl;
+        cout << "-------------------------------------------------------" << endl;
+        cout << " Subtotal Hospedaje:  " << subtotalHospedaje << " Bs." << endl;
+        cout << " Subtotal Consumos:    " << subtotalConsumos << " Bs." << endl;
+        cout << "-------------------------------------------------------" << endl;
+        cout << " TOTAL NETO A PAGAR:  " << totalFactura << " Bs." << endl;
+        cout << "=======================================================" << endl;
+        cout << " [OK]: El cuarto ha sido DESALOJADO y queda [DISPONIBLE]." << endl;
+        cout << " [OK]: Baja logica del huesped efectuada correctamente." << endl;
+        cout << "=======================================================" << endl;
+    }
+    else
+    {
+        cout << "\n[ERROR]: No se puede procesar el Check-Out." << endl;
+        cout << "Motivo: El CI " << ciBuscar << " no corresponde a ningun huesped ALOJADO actualmente." << endl;
     }
 }
