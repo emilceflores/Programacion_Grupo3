@@ -1,17 +1,16 @@
  
 #include <iostream>
 #include <fstream>
-#include "LibEstructuras.h"
 
 using namespace std;
 
 void RegistrarUsuario();
 void RegistrarHabitacion();
-void ModificarHabitacion();
-void DarBajaHabitacion();
-void ReportesFinancieros();
+void RegistrarProducto();
+void ModificarDatosGenerales();
+void menuReportes();
 void menuAdministrador();
-void ReportesFinancieros();
+
 
 void RegistrarUsuario()
 {
@@ -106,169 +105,214 @@ void RegistrarHabitacion()
 
 }
 
-void ModificarHabitacion()
+void RegistrarProducto()
 {
-    Habitacion habitacion;
-    fstream archivo;
-    int numeroBuscado;
-    // Indica si se encontró la habitación
-    bool encontrado = false;
+    Producto p;
+    ofstream archivo("PRODUCTOS.BIN", ios::binary | ios::app);
 
-    cout << "MODIFICAR HABITACION" << endl;
-    cout << "====================" << endl;
+    cout << "\nREGISTRAR PRODUCTO\n";
+    cout << "==================\n";
 
-    cout << "Ingrese el numero de habitacion a modificar: ";
-    cin >> numeroBuscado;
+    cout << "ID Producto: ";
+    cin >> p.idProducto;
 
-    // archivo en modo BINARIO para leer y escribir 
-    archivo.open("HABITACIONES.BIN",ios::in | ios::out | ios::binary);
+    cin.ignore();
+    cout << "Nombre: ";
+    cin.getline(p.nombreProd, 30);
 
-    // Verificar si el archivo se abrió correctamente
-    if (archivo.good())
+    cout << "Precio Venta: ";
+    cin >> p.precioVenta;
+
+    cout << "Stock: ";
+    cin >> p.stock;
+
+    p.activo = true;
+
+    archivo.write((char*)&p, sizeof(Producto));
+    archivo.close();
+
+    cout << "Producto registrado correctamente.\n";
+}
+
+void ModificarDatosGenerales()
+{
+    int opcion;
+
+    cout << "\nMODIFICAR DATOS GENERALES\n";
+    cout << "=========================\n";
+    cout << "1. Modificar Habitacion\n";
+    cout << "2. Modificar Producto (stock/precio)\n";
+    cout << "Seleccione: ";
+    cin >> opcion;
+
+    if (opcion == 1)
     {
-        while (archivo.read((char*)&habitacion,sizeof(Habitacion)) && !encontrado)
+        int numero;
+        Habitacion h;
+        fstream archivo("HABITACIONES.BIN", ios::in | ios::out | ios::binary);
+
+        cout << "Numero de habitacion: ";
+        cin >> numero;
+        bool encontrado = false;
+        while (archivo.read((char*)&h, sizeof(Habitacion)))
         {
-            // Verificar si el número ingresado coincide
-            if (habitacion.numero == numeroBuscado && habitacion.activo)
+            if (h.numero == numero && h.activo)
             {
                 encontrado = true;
+                archivo.seekp(-sizeof(Habitacion), ios::cur);
+                cin.ignore();
+                cout << "Nuevo tipo de habitacion: ";
+                cin.getline(h.tipo, 30);
 
-                // Mostrar los datos actuales
-                cout << "\nHABITACION ENCONTRADA" << endl;
-                cout << "------------------------" << endl;
-                cout << "Numero de habitacion: "
-                     << habitacion.numero << endl;
-                cout << "Tipo de habitacion: "
-                     << habitacion.tipo << endl;
-                cout << "Precio por noche: "
-                     << habitacion.precioNoche << endl;
-                cout << "------------------------" << endl;
+                do {
+                    cout << "Nuevo precio por noche: ";
+                    cin >> h.precioNoche;
+                    if (h.precioNoche < 0)
+                        cout << "ERROR: No se permiten numeros negativos.\n";
 
-                // Mover el puntero de escritura al inicio del registro encontrado
-                archivo.seekp(-sizeof(Habitacion),ios::cur);
+                } while (h.precioNoche < 0);
 
-                do
-                {
-                    cout << "\nIngrese el nuevo precio: ";
-                    cin >> habitacion.precioNoche;
-                    if (habitacion.precioNoche < 0)
-                    {
-                        cout << "Error: El precio no puede ser negativo."<< endl;
-                    }
-                } while (habitacion.precioNoche < 0);
+                archivo.write((char*)&h, sizeof(Habitacion));
+                cout << "Habitacion modificada correctamente.\n";
                 
-                // Escribir los nuevos datos en el archivo
-                archivo.write((char*)&habitacion,sizeof(Habitacion));
-                cout << "\nHabitacion modificada correctamente."<< endl;
             }
         }
-        if (!encontrado)// Verificar si no se encontró la habitación
-        {
-            cout << "\nHabitacion no encontrada."<< endl;
-        }
+
+        if (!encontrado)
+            cout << "Habitacion no encontrada.\n";
+
         archivo.close();
     }
-    else
+
+    if (opcion == 2)
     {
-        cout << "Error: No se pudo abrir el archivo HABITACIONES.BIN"<< endl;
-    }
-}
+        int id;
+        Producto p;
+        fstream archivo("PRODUCTOS.BIN", ios::in | ios::out | ios::binary);
 
-void DarBajaHabitacion()
-{
-    Habitacion habitacion;
-    fstream archivo;
-    int numeroBuscado;
-    bool encontrado = false;
+        cout << "ID producto: ";
+        cin >> id;
+        bool encontrado = false;
 
-    cout << "DAR DE BAJA HABITACION" << endl;
-    cout << "======================" << endl;
-
-    cout << "Ingrese el numero de habitacion: ";
-    cin >> numeroBuscado;
-    // Abrir el archivo en modo BINARIO para leer y escribir
-    archivo.open("HABITACIONES.BIN",ios::in | ios::out | ios::binary);
-    // Verificar si el archivo se abrió correctamente
-    if (archivo.good())
-    {
-        while (archivo.read((char*)&habitacion,sizeof(Habitacion)) && !encontrado)
+        while (archivo.read((char*)&p, sizeof(Producto)))
         {
-            if (habitacion.numero == numeroBuscado && habitacion.activo)
+            if (p.idProducto == id && p.activo)
             {
                 encontrado = true;
-                cout << "\nHABITACION ENCONTRADA" << endl;
-                cout << "------------------------" << endl;
-                cout << "Numero de habitacion: "
-                     << habitacion.numero << endl;
-                cout << "Tipo de habitacion: "
-                     << habitacion.tipo << endl;
-                cout << "------------------------" << endl;
+                archivo.seekp(-sizeof(Producto), ios::cur);
+                do {
+                    cout << "Nuevo precio: ";
+                    cin >> p.precioVenta;
+                    if (p.precioVenta < 0)
+                        cout << "ERROR: No se permiten numeros negativos.\n";
+                } while (p.precioVenta < 0);
 
-                // Volver al inicio del registro encontrado
-                archivo.seekp(-sizeof(Habitacion),ios::cur);
-                habitacion.activo = false;// Realizar la baja lógica
+                do {
+                    cout << "Nuevo stock: ";
+                    cin >> p.stock;
+                    if (p.stock < 0)
+                        cout << "ERROR: No se permiten numeros negativos.\n";
+                } while (p.stock < 0);
 
-                archivo.write((char*)&habitacion,sizeof(Habitacion));
-
-                cout << "\nHabitacion dada de baja correctamente."<< endl;
+                archivo.write((char*)&p, sizeof(Producto));
+                cout << "Producto modificado correctamente.\n";
             }
         }
-        // Verificar si no se encontró la habitación
         if (!encontrado)
-        {
-            cout << "\nHabitacion no encontrada."<< endl;
-        }
+            cout << "Producto no encontrado.\n";
         archivo.close();
-    }
-    else
-    {
-        cout << "Error: No se pudo abrir el archivo HABITACIONES.BIN"<< endl;
     }
 }
-
-void ReportesFinancieros()
+void menuReportes()
 {
-    PagoFactura factura;
-    ifstream archivo;
-
-    // acumula el dinero ingresado
-    float totalIngresos = 0;
-
-    cout << "REPORTE FINANCIERO" << endl;
-    cout << "==================" << endl;
-
-    // Abrir el archivo en modo BINARIO para lectura
-    archivo.open("FACTURAS.BIN", ios::binary);
-
-    // Verificar si el archivo se abrió correctamente
-    if (archivo.good())
+    int opcion;
+    do
     {
-        // Leer todos los registros del archivo
-        while (archivo.read((char*)&factura, sizeof(PagoFactura)))
+        cout << "\nPANEL DE REPORTES\n";
+        cout << "=========================\n";
+        cout << "1. Reporte de Habitaciones\n";
+        cout << "2. Reporte de Productos\n";
+        cout << "3. Reporte de Ingresos\n";
+        cout << "0. Volver\n";
+        cout << "Seleccione: ";
+        cin >> opcion;
+
+        if (opcion == 1)
         {
-            // Verificar que la factura esté activa
-            if (factura.activo)
+            Habitacion h;
+            ifstream archivo("HABITACIONES.BIN", ios::binary);
+            cout << "\nHABITACIONES\n";
+            cout << "---------------------\n";
+            while (archivo.read((char*)&h, sizeof(Habitacion)))
             {
-                // Mostrar los datos de la factura
-                cout << "Factura Nro: " << factura.idFactura << endl;
-                cout << "CI Huesped: " << factura.ciHuesped << endl;
-                cout << "Habitacion: " << factura.numHabitacion << endl;
-                cout << "Monto Total: Bs. " << factura.montoTotal << endl;
-                cout << "Fecha de Pago: "<< factura.fechaPago.dia << "/"<< factura.fechaPago.mes << "/"<< factura.fechaPago.anio << endl;
-                cout << "------------------------" << endl;
-                // Acumular el monto total
-                totalIngresos += factura.montoTotal;
+                if (h.activo)
+                {
+                    cout << "Nro: " << h.numero << endl;
+                    cout << "Tipo: " << h.tipo << endl;
+                    cout << "Precio: " << h.precioNoche << endl;
+                    cout << "Estado: ";
+                    if (h.estado == 0)
+                    {
+                        cout << "Libre" << endl;
+                    }
+                    else
+                    {
+                        cout << "Ocupada" << endl;
+                    }
+                    cout << "---------------------\n";
+                }
             }
+            archivo.close();
         }
-        // Mostrar el total general de ingresos
-        cout << "\nTOTAL DE INGRESOS DEL HOTEL: Bs. "<< totalIngresos << endl;
 
-        archivo.close();
-    }
-    else
-    {
-        cout << "Error: No se pudo abrir el archivo FACTURAS.BIN" << endl;
-    }
+        if (opcion == 2)
+        {
+            Producto p;
+            ifstream archivo("PRODUCTOS.BIN", ios::binary);
+
+            cout << "\nPRODUCTOS\n";
+            cout << "---------------------\n";
+
+            while (archivo.read((char*)&p, sizeof(Producto)))
+            {
+                if (p.activo)
+                {
+                    cout << "ID: " << p.idProducto << endl;
+                    cout << "Nombre: " << p.nombreProd << endl;
+                    cout << "Precio: " << p.precioVenta << endl;
+                    cout << "Stock: " << p.stock << endl;
+                    cout << "---------------------\n";
+                }
+            }
+            archivo.close();
+        }
+        if (opcion == 3)
+        {
+            PagoFactura factura;
+            ifstream archivo("FACTURAS.BIN", ios::binary);
+
+            float total = 0;
+
+            cout << "\nINGRESOS DEL HOTEL\n";
+            cout << "---------------------\n";
+            while (archivo.read((char*)&factura, sizeof(PagoFactura)))
+            {
+                if (factura.activo)
+                {
+                    cout << "Factura: " << factura.idFactura << endl;
+                    cout << "CI: " << factura.ciHuesped << endl;
+                    cout << "Habitacion: " << factura.numHabitacion << endl;
+                    cout << "Monto: " << factura.montoTotal << endl;
+                    cout << "---------------------\n";
+
+                    total += factura.montoTotal;
+                }
+            }
+            cout << "\nTOTAL INGRESOS: Bs. " << total << endl;
+            archivo.close();
+        }
+
+    } while (opcion != 0);
 }
 
 void menuAdministrador()
@@ -277,14 +321,17 @@ void menuAdministrador()
 
     do
     {
-        cout << "\nMENU ADMINISTRADOR\n";
-        cout << "==================\n";
-        cout << "1. Registrar usuario\n";
-        cout << "2. Registrar habitacion\n";
-        cout << "3. Modificar habitacion\n";
-        cout << "4. Dar de baja habitacion\n";
-        cout << "5. Reportes financieros\n";
-        cout << "0. Cerrar sesion\n";
+        system("cls"); // si estás en Linux usa system("clear");
+
+        cout << "\nMENU ADMINISTRADOR" << endl;
+        cout << "============================" << endl;
+        cout << "1. Registrar Usuario" << endl;
+        cout << "2. Registrar Habitacion" << endl;
+        cout << "3. Registrar Producto en Inventario" << endl;
+        cout << "4. Modificar Datos Generales" << endl;
+        cout << "5. Visualizar Panel de Reportes" << endl;
+        cout << "0. Cerrar Sesion" << endl;
+        cout << "============================" << endl;
 
         cout << "Seleccione una opcion: ";
         cin >> opcion;
@@ -300,17 +347,23 @@ void menuAdministrador()
                 break;
 
             case 3:
-                ModificarHabitacion();
+                RegistrarProducto(); 
                 break;
 
             case 4:
-                DarBajaHabitacion();
+                ModificarDatosGenerales(); 
                 break;
 
             case 5:
-                ReportesFinancieros();
+                menuReportes(); 
                 break;
+
+            case 0:
+                cout << "Opcion no valida." << endl;
+            break;
         }
 
-    }while(opcion != 0);
+        system("pause");
+
+    } while(opcion != 0);
 }
