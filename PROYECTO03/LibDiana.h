@@ -2,6 +2,7 @@
 // Grupo: 3.
 // Autor: Diana Ninoska Vasquez Benitez
 // Nombre del proyecto : Sistema de gestion hotelera,control de inventarios y facturacionintegrada "ceasars palace"
+
 #include <iostream>
 #include <fstream>
 #include <cstring>
@@ -84,16 +85,14 @@ void verHabitacionesDisponibles()
     cout << "No.\tTipo de Cuarto\t\tPrecio/Noche\tEstado" << endl;
     cout << "------------------------------------------------" << endl;
 
-    // Declaramos la variable para la lectura del archivo
     ifstream archivo;
-    // Abrimos el archivo exactamente con tu estructura tradicional .open()
     archivo.open("HABITACIONES.BIN", ios::binary);
     
     if (archivo.good())
     {
         while (archivo.read((char*)&hab, sizeof(Habitacion)))
         {
-            // Solo mostramos las habitaciones que estén operativas (activo == true) y libres (estado == 0)
+            // solo mostramos las habitaciones que estén operativas (activo == true) y libres (estado == 0)
             if (hab.activo == true && hab.estado == 0)
             {
                 hayDisponibles = true;
