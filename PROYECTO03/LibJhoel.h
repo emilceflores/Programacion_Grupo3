@@ -225,7 +225,7 @@ void verMapaHabitaciones()
                 }
             }
             
-            // Colocamos las etiquetas informativas actualizadas tal como en el informe
+        
             if (f == 10) {
                 cout << " Suite Presidencial\t| 700.00 Bs.";
             }
