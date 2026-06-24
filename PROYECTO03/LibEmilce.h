@@ -503,7 +503,7 @@ void menuAdministrador()
 
     do
     {
-        system("cls"); // si estás en Linux usa system("clear");
+        system("cls"); 
 
         cout << "\nMENU ADMINISTRADOR" << endl;
         cout << "============================" << endl;
