@@ -1,3 +1,7 @@
+// Materia: Programacion I, Paralelo 4
+// Grupo: 3.
+// Autor: Diana Ninoska Vasquez Benitez
+// Nombre del proyecto : Sistema de gestion hotelera,control de inventarios y facturacionintegrada "ceasars palace"
 #include <iostream>
 #include <fstream>
 #include <cstring>
@@ -555,6 +559,7 @@ void calcularPagoCheckOut()
     Habitacion habit;
     ConsumoExtra consumos;
     Producto prroductos;
+    PagoFactura pago; // Estructura oficial del grupo
 
     system("cls");
     cout << "=== OP5: CALCULAR PAGO Y CHECK-OUT (CERRAR ESTADÍA) ===" << endl;
@@ -690,6 +695,43 @@ void calcularPagoCheckOut()
         cout << " [OK]: El cuarto ha sido DESALOJADO y queda [DISPONIBLE]." << endl;
         cout << " [OK]: Baja logica del huesped efectuada correctamente." << endl;
         cout << "=======================================================" << endl;
+
+        // GUARDAR EN EL ARCHIVO (PAGOS.BIN)
+        // =========================================================================
+
+        int idContador = 1;
+        ifstream archivoLeerPagos("PAGOS.BIN", ios::binary);
+        if (archivoLeerPagos.good())
+        {
+            PagoFactura pAux;
+            while(archivoLeerPagos.read((char*)&pAux, sizeof(PagoFactura)))
+            {
+                idContador++;
+            }
+            archivoLeerPagos.close();
+        }
+
+        // Cargamos los datos en la estructura 
+        pago.idFactura = idContador;
+        pago.ciHuesped = ciBuscar;
+        pago.numHabitacion = habOcupada;
+        pago.montoTotal = totalFactura;
+        
+        // Pedimos los datos de la fecha 
+        cout << "\n--- REGISTRO OFICIAL DE CAJA ---" << endl;
+        cout << "Ingrese el Dia de pago (1-30): "; cin >> pago.fechaPago.dia;
+        cout << "Ingrese el Mes de pago (1-12): "; cin >> pago.fechaPago.mes;
+        cout << "Ingrese el Anio de pago: "; cin >> pago.fechaPago.anio;
+        pago.activo = true;
+
+        // Escritura en PAGOS.BIN 
+        ofstream archivoEscribirPagos("PAGOS.BIN", ios::binary | ios::app);
+        if (archivoEscribirPagos.good())
+        {
+            archivoEscribirPagos.write((char*)&pago, sizeof(PagoFactura));
+            archivoEscribirPagos.close();
+            cout << "\n[SISTEMA]: Registro financiero guardado exitosamente en PAGOS.BIN" << endl;
+        }
     }
     else
     {
