@@ -203,7 +203,7 @@ void verMapaHabitaciones()
 void verCatalogoPrecios() 
 {
     Producto p;
-    ifstream archivo("INVENTARIO.BIN", ios::binary);
+    ifstream archivo("PRODUCTOS.BIN", ios::binary);
     
     system("cls");
     cout << "=== CATALOGO DE PRODUCTOS Y PRECIOS ===" << endl;
