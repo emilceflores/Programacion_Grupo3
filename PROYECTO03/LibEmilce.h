@@ -5,9 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
-#include <cstdlib> 
-
-// INCLUSION DE TU LIBRERIA PROPIA (Donde están tus structs)
+#include <cstdlib>
 #include "libestructuras.h" 
 
 using namespace std;
