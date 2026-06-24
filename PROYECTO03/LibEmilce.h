@@ -112,7 +112,6 @@ void RegistrarHabitacion()
     }
 
     archivo.close();
-
 }
 
 void RegistrarProducto()
@@ -130,12 +129,25 @@ void RegistrarProducto()
     cout << "Nombre: ";
     cin.getline(p.nombreProd, 30);
 
-    cout << "Precio Venta: ";
-    cin >> p.precioVenta;
-
-    cout << "Stock: ";
-    cin >> p.stock;
-
+    do
+    {
+        cout << "Precio Venta: ";
+        cin >> p.precioVenta;
+        
+        if (p.precioVenta <= 0)
+        {
+            cout << "ERROR: El precio debe ser mayor a 0.\n";
+        }
+    } while (p.precioVenta <= 0);
+    do
+    {
+        cout << "Stock: ";
+        cin >> p.stock;
+        if (p.stock <= 0)
+        {
+            cout << "ERROR: El stock debe ser mayor a 0.\n";
+        }
+    } while (p.stock <= 0);
     p.activo = true;
 
     archivo.write((char*)&p, sizeof(Producto));
@@ -159,90 +171,142 @@ void ModificarDatosGenerales()
     if (opcion == 1)
     {
         Usuario u;
-        fstream archivo("USUARIOS.BIN", ios::in | ios::out | ios::binary);
         char login[30];
+        bool encontrado;
 
-        cout << "Login del usuario: ";
-        cin >> login;
-
-        while (archivo.read((char*)&u, sizeof(Usuario)))
+        do
         {
-            if (strcmp(u.login, login) == 0 && u.activo)
+            cout << "Login del usuario: ";
+            cin >> login;
+            fstream archivo("USUARIOS.BIN", ios::in | ios::out | ios::binary);
+            while (archivo.read((char*)&u, sizeof(Usuario)))
             {
-                archivo.seekp(-sizeof(Usuario), ios::cur);
-
-                cout << "Nuevo password: ";
-                cin >> u.password;
-
-                do {
-                    cout << "Nuevo rol (1 Admin / 2 Recepcionista): ";
-                    cin >> u.rol;
-                } while (u.rol != 1 && u.rol != 2);
-
-                archivo.write((char*)&u, sizeof(Usuario));
-                break;
+                if (strcmp(u.login, login) == 0 && u.activo)
+                {
+                    encontrado=true;
+                    archivo.seekp(-sizeof(Usuario), ios::cur);
+                    
+                    cout << "Nuevo password: ";
+                    cin >> u.password;
+                    do 
+                    {
+                        cout << "Nuevo rol (1 Admin / 2 Recepcionista): ";
+                        cin >> u.rol;
+                        if (u.rol != 1 && u.rol != 2)
+                        {
+                            cout << "ERROR: Rol invalido.\n";
+                        }
+                        
+                    } while (u.rol != 1 && u.rol != 2);
+                    archivo.write((char*)&u, sizeof(Usuario));
+                    break;
             }
         }
         archivo.close();
-    }
+        if (!encontrado)
+        {
+            cout<<"ERROR: El usuario no existe. Ingrese un login existente.\n";
+        }
+    }while (!encontrado); 
+}
     if (opcion == 2)
     {
         Habitacion h;
-        fstream archivo("HABITACIONES.BIN", ios::in | ios::out | ios::binary);
+        
         int num;
-
-        cout << "Numero de habitacion: ";
-        cin >> num;
-
-        while (archivo.read((char*)&h, sizeof(Habitacion)))
+        bool encontrado;
+        do
         {
-            if (h.numero == num && h.activo)
-            {
-                archivo.seekp(-sizeof(Habitacion), ios::cur);
+            encontrado =false;
+            
+            cout << "Numero de habitacion: ";
+            cin >> num;
 
-                do {
+            fstream archivo("HABITACIONES.BIN", ios::in | ios::out | ios::binary);
+            
+            while (archivo.read((char*)&h, sizeof(Habitacion)))
+            {
+                if (h.numero == num && h.activo)
+                {
+                encontrado =true;
+
+                archivo.seekp(-sizeof(Habitacion), ios::cur);
+                do 
+                {
                     cout << "Nuevo precio por noche: ";
                     cin >> h.precioNoche;
-                } while (h.precioNoche < 0);
+                    if (h.precioNoche <0)
+                    {
+                        cout << "Error: el precio debe ser mayor a 0 ";
+                    }
+                } while (h.precioNoche <0);
 
                 archivo.write((char*)&h, sizeof(Habitacion));
                 break;
             }
         }
-
+        
         archivo.close();
+
+        if (!encontrado) 
+        {
+            cout << "ERROR: La habitacion no existe. Ingrese una habitacion existente.\n";
+        }
+           
+      } while (!encontrado); 
     }
 
     if (opcion == 3)
     {
         Producto p;
-        fstream archivo("PRODUCTOS.BIN", ios::in | ios::out | ios::binary);
+        
         int id;
-
-        cout << "ID producto: ";
-        cin >> id;
-
-        while (archivo.read((char*)&p, sizeof(Producto)))
+        bool encontrado;
+        do
         {
-            if (p.idProducto == id && p.activo)
-            {
-                archivo.seekp(-sizeof(Producto), ios::cur);
+            encontrado =false ;
+            cout << "ID producto: ";
+            cin >> id;
+            fstream archivo("PRODUCTOS.BIN", ios::in | ios::out | ios::binary);
 
-                do {
+            while (archivo.read((char*)&p, sizeof(Producto)))
+            {
+                if (p.idProducto == id && p.activo)
+                {
+                    encontrado = true;
+                    archivo.seekp(-sizeof(Producto), ios::cur);
+                do 
+                {
                     cout << "Nuevo precio: ";
                     cin >> p.precioVenta;
+                    if (p.precioVenta < 0)
+                    {
+                        cout << "Error: el precio debe ser mayor a 0 ";
+                    }
+                    
                 } while (p.precioVenta < 0);
 
-                do {
+                do 
+                {
                     cout << "Nuevo stock: ";
                     cin >> p.stock;
+                    if (p.stock < 0)
+                    {
+                        cout << "Error: el precio debe ser mayor a 0 ";
+                    }
                 } while (p.stock < 0);
 
                 archivo.write((char*)&p, sizeof(Producto));
                 break;
-            }
+             }
         }
-        archivo.close();
+         archivo.close();
+         if (!encontrado)
+         {
+            cout << "ERROR: El producto no existe. Ingrese un ID existente.\n";
+         }
+         
+        } while (!encontrado);
     }
 }
 void menuReportes()
@@ -500,7 +564,6 @@ void MostrarReporteReservasCanceladas()
 void menuAdministrador()
 {
     int opcion = 0;
-
     do
     {
         system("cls"); 
