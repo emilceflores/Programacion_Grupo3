@@ -1,4 +1,3 @@
-
 // Materia: Programacion I, Paralelo 4
 // Grupo: 3.
 // Autor: Jhoel Marco Machicado Flores.
@@ -7,14 +6,12 @@
 #include <fstream>
 #include <cstring>
 #include <cstdlib> 
-#include "libestructuras.h" 
-
-using namespace std;
-
-// PROTOTIPOS DE FUNCIONES
 
 void menuAdministrador(); 
 void menuRecepcionista();  
+
+using namespace std;
+
 void menuLoginPersonal();
 void menuConsultaClientes();
 void verMapaHabitaciones();
@@ -107,7 +104,7 @@ void menuLoginPersonal()
     }
 }
 
-// CONSULTA PARA CLIENTES
+// SUBMENÚ DE CONSULTA 
 void menuConsultaClientes() 
 {
     int opcConsulta = 0;
@@ -157,7 +154,8 @@ void menuConsultaClientes()
     } 
     while(opcConsulta != 0);
 }
-// MAPA DE HABITACIONES 
+
+// MAPA DE HABITACIONES (ACTUALIZADO CON "EJECUTIVA / MATRIMONIAL")
 void verMapaHabitaciones() 
 {
     Habitacion h;
@@ -227,7 +225,7 @@ void verMapaHabitaciones()
                 }
             }
             
-            // Categorías y precios fijos alineados a tu informe
+            // Colocamos las etiquetas informativas actualizadas tal como en el informe
             if (f == 10) {
                 cout << " Suite Presidencial\t| 700.00 Bs.";
             }
@@ -255,7 +253,7 @@ void verMapaHabitaciones()
     }
 }
 
-// CATÁLOGO DE PRECIOS DE PRODUCTOS
+// CATÁLOGO DE PRECIOS
 void verCatalogoPrecios() 
 {
     Producto p;
@@ -292,7 +290,6 @@ void verCatalogoPrecios()
 }
 
 // BUSCAR RESERVA POR CI
-
 void buscarReservaPorCI() 
 {
     int ciBuscar; 
@@ -338,31 +335,4 @@ void buscarReservaPorCI()
         system("cls");
         cout << "[ERROR]: No se pudo abrir el archivo de reservas." << endl;
     }
-}
-
-void menuAdministrador() 
-{
-    system("cls");
-    cout << "=== MENU ADMINISTRADOR ===" << endl;
-    cout << "1. Consultas generales de clientes" << endl;
-    cout << "0. Cerrar sesion" << endl;
-    cout << "Seleccione: ";
-    int op; cin >> op;
-    if (op == 1) menuConsultaClientes();
-}
-
-void menuRecepcionista() 
-{
-    system("cls");
-    cout << "=== MENU RECEPCIONISTA ===" << endl;
-    cout << "1. Consultas generales de clientes" << endl;
-    cout << "0. Cerrar sesion" << endl;
-    cout << "Seleccione: ";
-    int op; cin >> op;
-    if (op == 1) menuConsultaClientes();
-}
-int main() 
-{
-    menuLoginPersonal();
-    return 0;
 }
